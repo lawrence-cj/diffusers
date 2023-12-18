@@ -16,11 +16,9 @@
 # The codebase is modified based on https://github.com/huggingface/diffusers/blob/main/src/diffusers/schedulers/scheduling_dpmsolver_multistep.py
 
 import math
-from typing import List, Optional, Tuple, Union, Callable
-
 import numpy as np
 import torch
-
+from typing import List, Optional, Tuple, Union, Callable
 from diffusers.configuration_utils import ConfigMixin, register_to_config
 from diffusers.utils.torch_utils import randn_tensor
 from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers, SchedulerMixin, SchedulerOutput
@@ -28,9 +26,9 @@ from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers, Sch
 
 # Copied from diffusers.schedulers.scheduling_ddpm.betas_for_alpha_bar
 def betas_for_alpha_bar(
-        num_diffusion_timesteps,
-        max_beta=0.999,
-        alpha_transform_type="cosine",
+    num_diffusion_timesteps,
+    max_beta=0.999,
+    alpha_transform_type="cosine",
 ):
     """
     Create a beta schedule that discretizes the given alpha_t_bar function, which defines the cumulative product of
