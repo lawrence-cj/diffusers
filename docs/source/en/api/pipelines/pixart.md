@@ -146,3 +146,4 @@ While loading the `text_encoder`, you set `load_in_8bit` to `True`. You could al
 [[autodoc]] PixArtAlphaPipeline
 	- all
 	- __call__
+	
