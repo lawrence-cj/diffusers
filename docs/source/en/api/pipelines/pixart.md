@@ -141,6 +141,78 @@ Text embeddings computed in 8-bit can impact the quality of the generated images
 
 While loading the `text_encoder`, you set `load_in_8bit` to `True`. You could also specify `load_in_4bit` to bring your memory requirements down even further to under 7GB.
 
+## Accelerate Inference by TGATE
+
+[T-GATE: Cross-Attention Makes Inference Cumbersome in Text-to-Image Diffusion Models](https://huggingface.co/papers/2404.02747) is Wentian Zhang, Haozhe Liu, Jinheng Xie, Francesco Faccio, Mike Zheng Shou, Jürgen Schmidhuber
+
+
+*We find that cross-attention outputs converge to a fixed point during the initial denoising steps. Consequently, the entire inference process can be divided into two stages: an initial semantics-planning phase, during which the model relies on text to plan visual semantics, and a subsequent fidelity-improving phase, during which the model tries to generate images from previously planned semantics. Surprisingly, ignoring text conditions in the fidelity-improving stage not only reduces computation complexity, but also slightly decreases FID score. This yields a simple and training-free method called TGATE for efficient generation, which caches the cross-attention output once it converges and keeps it fixed during the remaining inference steps.*
+
+### Remarkable Notes
+
+* Training-Free
+* Seamlessly support PixArt and PixArt-LCM
+* Accelerate inference by 10% to 50%
+* Generative performance is highly preserved
+
+Here is an example to run the [`PixArtAlphaPipeline`] with [TGATE](https://github.com/HaozheLiu-ST/T-GATE) method.
+
+
+```python
+
+from diffusers import PixArtAlphaPipeline
+import torch
+
+pipe = PixArtAlphaPipeline.from_pretrained(
+    "PixArt-alpha/PixArt-XL-2-1024-MS", 
+    torch_dtype=torch.float16)
+
+gate_step = 8 # The time step to stop calculating the cross-attention
+inference_num_per_image = 25
+
+prompt = "professional portrait photo of an anthropomorphic cat wearing fancy gentleman hat and jacket walking in autumn forest."
+
+image = pipe.tgate(
+    prompt,
+    gate_step=gate_step,
+    num_inference_steps=inference_num_per_image,
+    num_images_per_prompt=num_images_per_prompt).images[0]
+
+image.save("alpaca_tgate.png")
+
+```
+![](https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/diffusers/pixart/pixart_tgate.png)
+
+TGATE method can also be used on the latent consistency model. Here is an example.
+
+
+```python
+
+from diffusers import PixArtAlphaPipeline
+import torch
+
+pipe = PixArtAlphaPipeline.from_pretrained(
+    "PixArt-alpha/PixArt-LCM-XL-2-1024-MS", 
+    torch_dtype=torch.float16, 
+    use_safetensors=True)
+
+gate_step = 2
+inference_num_per_image = 4
+
+prompt = "A fantasy battle scene with dragons and warriors."
+
+image = pipe.tgate(
+    prompt,
+    gate_step=gate_step,
+    num_inference_steps=inference_num_per_image,
+    guidance_scale=0,
+    num_images_per_prompt=num_images_per_prompt).images[0]
+
+image.save("alpaca_lcm.png")
+
+```
+![](https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/diffusers/pixart/pixart_lcm_tgate.png)
+
 ## PixArtAlphaPipeline
 
 [[autodoc]] PixArtAlphaPipeline
